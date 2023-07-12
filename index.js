@@ -153,8 +153,15 @@ async function run() {
     app.get("/admin/:email", async (req, res) => {
       const email = req.params.email;
       const user = await usersCollection.findOne({ email: email });
-      const isAdmin = user.role === "admin";
-      res.send(isAdmin);
+      console.log(user);
+      try {
+        if(user){
+          const isAdmin = (user.role === "admin");
+        res.send(isAdmin);
+        }
+      } catch (error) {
+        console.error(error);
+      }
     });
 
     app.put("/users/admin/:email", async (req, res) => {
@@ -208,7 +215,7 @@ async function run() {
 
     app.get("/quizzes", async (req, res) => {
       const query = {};
-      const cursor = await quizzesCollection.find(query);
+      const cursor = quizzesCollection.find(query);
       const quizzes = await cursor.toArray();
       res.send(quizzes);
     });
