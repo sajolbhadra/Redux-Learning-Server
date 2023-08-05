@@ -27,7 +27,8 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    await client.connect();
+    // await client.connect();
+    new MongoClient();
     const documentationsCollection = client
       .db("redux-learning")
       .collection("documentations");
@@ -155,12 +156,12 @@ async function run() {
       const user = await usersCollection.findOne({ email: email });
       console.log(user);
       try {
-        if(user){
-          const isAdmin = (user.role === "admin");
-        res.send(isAdmin);
+        if (user) {
+          const isAdmin = user.role === "admin";
+          res.send(isAdmin);
         }
       } catch (error) {
-        console.error(error);
+        res.send(error);
       }
     });
 
@@ -206,6 +207,12 @@ async function run() {
     });
 
     // Quizzes
+    app.get("/quizzes", async (req, res) => {
+      const query = {};
+      const cursor = quizzesCollection.find(query);
+      const quizzes = await cursor.toArray();
+      res.send(quizzes);
+    });
     app.post("/quizzes", async (req, res) => {
       const newItem = req.body;
       const result = await quizzesCollection.insertOne(newItem);
@@ -213,48 +220,41 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/quizzes", async (req, res) => {
-      const query = {};
-      const cursor = quizzesCollection.find(query);
-      const quizzes = await cursor.toArray();
-      res.send(quizzes);
-    });
-
+    
     // reviews
+    app.get("/reviews", async (req, res) => {
+      const query = {};
+      const cursor = reviewsCollection.find(query);
+      try {
+        const reviews = cursor.toArray();
+        console.log(reviews);
+        res.send(reviews);
+      } catch (error) {
+        res.send(error);
+      }
+    });
     app.post("/reviews", async (req, res) => {
       const newItem = req.body;
       const result = await reviewsCollection.insertOne(newItem);
       res.send(result);
     });
 
-    app.get("/reviews", async (req, res) => {
-      const query = {};
-      const cursor = reviewsCollection.find(query);
-      const reviews = await cursor.toArray();
-      res.send(reviews);
-    });
 
     // forums
-    app.post("/forums", async (req, res) => {
-      const newItem = req.body;
-      const result = await forumsCollection.insertOne(newItem);
-      res.send(result);
-    });
-
     app.get("/forums", async (req, res) => {
       const query = {};
       const cursor = forumsCollection.find(query);
       const forums = await cursor.toArray();
       res.send(forums);
     });
-
-    // forums Answer
-    app.post("/forumsAnswer", async (req, res) => {
+    app.post("/forums", async (req, res) => {
       const newItem = req.body;
-      const result = await forumsAnswerCollection.insertOne(newItem);
+      const result = await forumsCollection.insertOne(newItem);
       res.send(result);
     });
 
+
+    // forums Answer
     app.get("/forumsAnswer/:id", async (req, res) => {
       const id = req.params.id;
       const query = { ansID: id };
@@ -263,6 +263,12 @@ async function run() {
       console.log(forumsAnswer);
       res.send(forumsAnswer);
     });
+    app.post("/forumsAnswer", async (req, res) => {
+      const newItem = req.body;
+      const result = await forumsAnswerCollection.insertOne(newItem);
+      res.send(result);
+    });
+
 
     // userAnswer
     app.post("/userAnswer", async (req, res) => {
